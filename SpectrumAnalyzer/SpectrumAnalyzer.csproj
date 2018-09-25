@@ -137,6 +137,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Models\ConsoleContent.cs" />
+    <Compile Include="SerialComm\Controller.cs" />
+    <Compile Include="SerialComm\CRC16.cs" />
+    <Compile Include="SerialComm\SerialComm.cs" />
+    <Compile Include="SerialComm\SerialMessage.cs" />
     <Compile Include="Controls\AudioSpectrum.xaml.cs">
       <DependentUpon>AudioSpectrum.xaml</DependentUpon>
     </Compile>

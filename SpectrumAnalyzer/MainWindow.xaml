@@ -10,7 +10,9 @@
                       xmlns:models="clr-namespace:SpectrumAnalyzer.Models"
                       mc:Ignorable="d"
                       SizeToContent="WidthAndHeight" Background="Black" Strength="0.75" 
-                      DataContext="{Binding AnalyzerViewModel, Source={x:Static module:ViewModelLocator.Instance}}">
+                      DataContext="{Binding AnalyzerViewModel, Source={x:Static module:ViewModelLocator.Instance}}"
+                      Title="Spectrum Analyzer" Height="781.401">
+    
     <windows:BlurryWindow.Resources>
         <system:Double x:Key="ActualRaising">25.5</system:Double>
         <system:Double x:Key="ActualDropping">25.5</system:Double>
@@ -23,45 +25,73 @@
     </windows:BlurryWindow.Resources>
 
     <Grid>
-        <StackPanel Orientation="Vertical">
-            <StackPanel Orientation="Vertical" Margin="25 0">
-                <Grid x:Name="Spectrum" Height="100">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="149*"/>
+            <ColumnDefinition Width="61*"/>
+            <ColumnDefinition Width="88*"/>
+        </Grid.ColumnDefinitions>
+        
+        <StackPanel Orientation="Vertical" 
+                    Grid.ColumnSpan="3">
+            
+            <!--Spectrum Analyzer Graphic-->
+            <StackPanel Orientation="Vertical" 
+                        Margin="25 0">
+
+                <!--Grid for Spectrum -->
+                <Grid x:Name="Spectrum" 
+                      Height="100">
+                    
                     <TextBlock Text="{Binding CurrentAudioDevice.FriendlyName}"
                                Foreground="{StaticResource ForegroundPitched}"
-                               FontFamily="Segoe UI Light" FontSize="50"
+                               FontFamily="Segoe UI Light" 
+                               FontSize="50"
                                Opacity="{StaticResource ShadowOpacity}"
-                               HorizontalAlignment="Right"/>
+                               HorizontalAlignment="Center"/>
+                    
+                    <!-- Main Spectrum Bars -->
                     <controls:AudioSpectrum PitchColor="{StaticResource PitchColor}"
                                             ForegroundPitched="{StaticResource ForegroundPitched}"
                                             Foreground="{StaticResource Foreground}"
                                             SpeedRaising="{StaticResource ShadowRaising}"
                                             SpeedDropping="{StaticResource ShadowDropping}"
                                             Opacity="{StaticResource ShadowOpacity}"/>
+
                     <controls:AudioSpectrum PitchColor="{StaticResource PitchColor}"
                                             ForegroundPitched="{StaticResource ForegroundPitched}"
                                             Foreground="{StaticResource Foreground}"
                                             SpeedRaising="{StaticResource ActualRaising}"
                                             SpeedDropping="{StaticResource ActualDropping}"/>
                 </Grid>
-                <Grid x:Name="Reflection" Height="50" RenderTransformOrigin="0.5 0.5">
+                
+                <!--Grid for Spectrum Reflection-->
+                <Grid x:Name="Reflection" 
+                      Height="50" 
+                      RenderTransformOrigin="0.5 0.5">
+                    
                     <Grid.Effect>
                         <BlurEffect Radius="10"/>
                     </Grid.Effect>
+                    
                     <Grid.RenderTransform>
                         <ScaleTransform ScaleY="-1" />
                     </Grid.RenderTransform>
+                    
                     <Grid.OpacityMask>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                             <GradientStop Offset="0" Color="Transparent"/>
                             <GradientStop Offset="1" Color="Black"/>
                         </LinearGradientBrush>
                     </Grid.OpacityMask>
+                    
+                    <!-- Spectrum Bar Reflections -->
                     <controls:AudioSpectrum PitchColor="{StaticResource PitchColor}"
                                             ForegroundPitched="{StaticResource ForegroundPitched}"
                                             Foreground="{StaticResource Foreground}"
                                             SpeedRaising="{StaticResource ShadowRaising}"
                                             SpeedDropping="{StaticResource ShadowDropping}"
                                             Opacity="{StaticResource ShadowOpacity}"/>
+                    
                     <controls:AudioSpectrum PitchColor="{StaticResource PitchColor}"
                                             ForegroundPitched="{StaticResource ForegroundPitched}"
                                             Foreground="{StaticResource Foreground}"
@@ -72,7 +102,7 @@
 
             <DockPanel Margin="25 0 25 25">
                 <StackPanel Orientation="Vertical">
-                    <TextBlock Text="Observers"
+                    <TextBlock Text="Audio Details:"
                                Margin="5"
                                FontSize="{StaticResource StrongFontSize}"/>
                     <ItemsControl ItemsSource="{Binding FrequencyObservers}"
@@ -110,6 +140,44 @@
                                            HorizontalAlignment="Right"
                                            ColorChanged="BlurryColorPicker_OnColorChanged"/>
             </DockPanel>
+
+            <StackPanel Orientation="Vertical">
+                <ComboBox x:Name="comboBoxComPort" 
+                          Height="25" 
+                          Margin="10,0,10,0"  
+                          Background="Black" 
+                          Foreground="White"
+                          BorderBrush="{x:Null}"
+                          SelectionChanged="comboBoxComPort_SelectionChanged" />
+                <Button x:Name="buttonConnectDisconnect" 
+                        Content="Connect" 
+                        Height="25" 
+                        Margin="10,0,10,0"
+                        Click="buttonConnectDisconnect_Click"/>
+                <TextBox x:Name="ConsoleInput"
+                         Text="{Binding ConsoleInput, Mode=TwoWay}" 
+                         KeyDown="ConsoleInput_KeyDown"
+                         Margin="10" 
+                         Background="Black"
+                         Foreground="White" 
+                         FontFamily="Consolas" 
+                         BorderBrush="{x:Null}"
+                         SelectionBrush="{x:Null}" />
+                <ScrollViewer Name="Scroller" 
+                              Margin="10" 
+                              Height="300" 
+                              Background="Black">
+                    <ItemsControl ItemsSource="{Binding ConsoleOutput, Mode=OneWay}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path=.}" 
+                                           Foreground="LimeGreen" 
+                                           FontFamily="Consolas"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </StackPanel>
         </StackPanel>
     </Grid>
 </windows:BlurryWindow>
