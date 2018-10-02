@@ -22,7 +22,6 @@ namespace SpectrumAnalyzer
         ConsoleContent dc = new ConsoleContent();
 
         private SerialPort _serialPort = null;
-        private bool _msg_received;
         private string _msg;
         private Queue<string> _rx_msgs = new Queue<string>();
 
@@ -40,7 +39,7 @@ namespace SpectrumAnalyzer
         void ConsoleInput_KeyDown(object sender, KeyEventArgs e)
         {
             int strLength = ConsoleInput.Text.Length;
-            Console.Write(e.Key);
+            System.Console.WriteLine(e.Key);
 
             if (strLength > 0)
             {
@@ -94,7 +93,7 @@ namespace SpectrumAnalyzer
             }
             else
             {
-                comboBoxComPort.Text = "No COM Port";
+                comboBoxComPort.Text = "No Available COM Ports";
             }
         }
 
@@ -103,29 +102,42 @@ namespace SpectrumAnalyzer
             ViewModelLocator.Instance.AnalyzerViewModel.Stop();
         }
 
-        private void OpenComPort(string com_port)
+        private bool OpenComPort(string com_port)
         {
+            bool rtnStatus = false;
+
             if (_serialPort == null)
             {
                 _serialPort = new SerialPort();
             }
 
-            _serialPort.BaudRate = 115200;
-            _serialPort.DataBits = 8;
-            _serialPort.Handshake = Handshake.None;
-            _serialPort.Parity = Parity.None;
-            _serialPort.PortName = com_port;
-            _serialPort.StopBits = StopBits.One;
-            _serialPort.ReadTimeout = 500;
-            _serialPort.WriteTimeout = 500;
+            try
+            {
+                _serialPort.BaudRate = 115200;
+                _serialPort.DataBits = 8;
+                _serialPort.Handshake = Handshake.None;
+                _serialPort.Parity = Parity.None;
+                _serialPort.PortName = com_port;
+                _serialPort.StopBits = StopBits.One;
+                _serialPort.ReadTimeout = 500;
+                _serialPort.WriteTimeout = 500;
 
-            // TODO: Add exception handling.
-            _serialPort.Open();
+                // TODO: Add exception handling.
+                _serialPort.Open();
 
-            _serialPort.DataReceived += new SerialDataReceivedEventHandler(_serialPort_DataReceived);
+                _serialPort.DataReceived += new SerialDataReceivedEventHandler(_serialPort_DataReceived);
 
-            dc.ConsoleOutput.Add(_serialPort.PortName + " Connected");
+                dc.ConsoleOutput.Add(_serialPort.PortName + " Connected");
+                rtnStatus = true;
+            }
+            catch
+            {
+                dc.ConsoleOutput.Add("COM Port Could Not Be Opened");
+            }
+
             Scroller.ScrollToBottom();
+
+            return rtnStatus;
         }
 
         private void CloseComPort()
@@ -138,8 +150,6 @@ namespace SpectrumAnalyzer
                 _serialPort.Close();
                 _serialPort.DataReceived -= _serialPort_DataReceived;
                 _serialPort = null;
-
-
             }
         }
 
@@ -170,10 +180,14 @@ namespace SpectrumAnalyzer
         private void BlurryColorPicker_OnColorChanged(object sender, Color color)
         {
             foreach (var audioSpectrum in Spectrum.Children.OfType<AudioSpectrum>())
+            {
                 audioSpectrum.ForegroundPitched = new SolidColorBrush(color);
+            }
 
             foreach (var audioSpectrum in Reflection.Children.OfType<AudioSpectrum>())
+            {
                 audioSpectrum.ForegroundPitched = new SolidColorBrush(color);
+            }
         }
 
         private void comboBoxComPort_Selected(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -190,9 +204,11 @@ namespace SpectrumAnalyzer
         {
             if (buttonConnectDisconnect.Content.Equals("Connect"))
             {
-                buttonConnectDisconnect.Content = "Disconnect";
-                comboBoxComPort.IsEnabled = false;
-                OpenComPort(comboBoxComPort.Text);
+                if (OpenComPort(comboBoxComPort.Text))
+                {
+                    buttonConnectDisconnect.Content = "Disconnect";
+                    comboBoxComPort.IsEnabled = false;
+                }
             }
             else
             {
@@ -231,25 +247,56 @@ namespace SpectrumAnalyzer
                     if (_msg.Contains("\r\n"))
                     {
                         // Found end of received message.
-                        _msg_received = true;
-                        break;
+                        string result = Regex.Replace(_msg, @"\r\n?|\n", "");
+
+                        Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
+                        {
+                            dc.ConsoleOutput.Add(result);
+                            Scroller.ScrollToBottom();
+                        }));
+
+                        _msg = "";
                     }
                 }
             }
+        }
 
-            if (_msg_received)
-            {
-                string result = Regex.Replace(_msg, @"\r\n?|\n", "");
+        private void buttonOff_Click(object sender, RoutedEventArgs e)
+        {
+            SendText("mode off/r");
+        }
 
-                Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
-                {
-                    dc.ConsoleOutput.Add(result);
-                    Scroller.ScrollToBottom();
-                }));
+        private void buttonWhite_Click(object sender, RoutedEventArgs e)
+        {
+            SendText("mode white/r");
+        }
 
-                _msg_received = false;
-                _msg = "";
-            }
+        private void buttonRainbow_Click(object sender, RoutedEventArgs e)
+        {
+            SendText("mode rainbow");
+        }
+
+        private void buttonWRainbow_Click(object sender, RoutedEventArgs e)
+        {
+            SendText("mode wrainbow");
+        }
+
+        private void buttonColor_Click(object sender, RoutedEventArgs e)
+        {
+            int r = 255;
+            int g = 255;
+            int b = 255;            
+            SendText("mode color " + String.Format("%d %d %d", r, g, b));
+        }
+
+        private void buttonPulse_Click(object sender, RoutedEventArgs e)
+        {
+            SendText("mode pulse");
+        }
+
+        private void buttonStat_Click(object sender, RoutedEventArgs e)
+        {
+            SendText("mode stat");
         }
     }
 }

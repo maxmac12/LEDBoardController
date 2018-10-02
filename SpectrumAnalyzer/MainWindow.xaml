@@ -11,7 +11,7 @@
                       mc:Ignorable="d"
                       SizeToContent="WidthAndHeight" Background="Black" Strength="0.75" 
                       DataContext="{Binding AnalyzerViewModel, Source={x:Static module:ViewModelLocator.Instance}}"
-                      Title="Spectrum Analyzer" Height="781.401">
+                      Title="Spectrum Analyzer" Height="938.901">
     
     <windows:BlurryWindow.Resources>
         <system:Double x:Key="ActualRaising">25.5</system:Double>
@@ -177,6 +177,41 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
+                <Button x:Name="buttonOff" 
+                        Content="OFF" 
+                        Height="25" 
+                        Margin="10,0,10,0"
+                        Click="buttonOff_Click"/>
+                <Button x:Name="buttonWhite" 
+                        Content="WHITE" 
+                        Height="25" 
+                        Margin="10,0,10,0"
+                        Click="buttonWhite_Click"/>
+                <Button x:Name="buttonRainbow" 
+                        Content="RAINBOW" 
+                        Height="25" 
+                        Margin="10,0,10,0"
+                        Click="buttonRainbow_Click"/>
+                <Button x:Name="buttonWRainbow" 
+                        Content="WRAINBOW" 
+                        Height="25" 
+                        Margin="10,0,10,0"
+                        Click="buttonWRainbow_Click"/>
+                <Button x:Name="buttonColor" 
+                        Content="COLOR" 
+                        Height="25" 
+                        Margin="10,0,10,0"
+                        Click="buttonColor_Click"/>
+                <Button x:Name="buttonPulse" 
+                        Content="PULSE" 
+                        Height="25" 
+                        Margin="10,0,10,0"
+                        Click="buttonPulse_Click"/>
+                <Button x:Name="buttonStat" 
+                        Content="STAT" 
+                        Height="25" 
+                        Margin="10,0,10,0"
+                        Click="buttonStat_Click"/>
             </StackPanel>
         </StackPanel>
     </Grid>
