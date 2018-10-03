@@ -156,7 +156,7 @@
                         Click="buttonConnectDisconnect_Click"/>
                 <TextBox x:Name="ConsoleInput"
                          Text="{Binding ConsoleInput, Mode=TwoWay}" 
-                         KeyDown="ConsoleInput_KeyDown"
+                         PreviewKeyUp="ConsoleInput_PreviewKeyUp"
                          Margin="10" 
                          Background="Black"
                          Foreground="White" 

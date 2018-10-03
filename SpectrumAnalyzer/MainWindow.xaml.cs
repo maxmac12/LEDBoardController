@@ -22,7 +22,9 @@ namespace SpectrumAnalyzer
         ConsoleContent dc = new ConsoleContent();
 
         private SerialPort _serialPort = null;
+        private Thread _threadSerial;
         private string _msg;
+        private Queue<string> _tx_msgs = new Queue<string>();
         private Queue<string> _rx_msgs = new Queue<string>();
 
         private byte[] STX = new byte[] { 0x02 };
@@ -34,28 +36,68 @@ namespace SpectrumAnalyzer
             Init_ComboBoxComPort();
             Closed += OnClosed;
             DataContext = dc;
+            _threadSerial = new Thread(new ThreadStart(SerialThread));
+            _threadSerial.Start();
         }
 
-        void ConsoleInput_KeyDown(object sender, KeyEventArgs e)
+        private void SerialThread()
         {
-            int strLength = ConsoleInput.Text.Length;
-            System.Console.WriteLine(e.Key);
-
-            if (strLength > 0)
+     
+            while (true)
             {
-                SendText(ConsoleInput.Text.Substring(strLength - 1, 1));
-            }
+                if (_tx_msgs.Count > 0)
+                {
+                    string next_msg = _tx_msgs.Dequeue() + "\r";
 
+                    if (_serialPort != null)
+                    {
+                        if (_serialPort.IsOpen)
+                        {
+                            try
+                            {
+                                // Send the binary data out the port
+                                byte[] bytes = Encoding.UTF8.GetBytes(next_msg);
+
+                                foreach (byte next in bytes)
+                                {
+                                    byte[] data = new byte[] { next };
+                                    _serialPort.Write(data, 0, 1);
+
+                                    Thread.Sleep(50);  // Wait for the device to process each byte.
+                                }
+                            }
+                            catch
+                            {
+
+                            }
+                        }
+                        else
+                        {
+                        }
+                    }
+                }
+
+                Thread.Sleep(500);  // Wait for the device to process any commands.
+
+                if (_rx_msgs.Count > 0)
+                {
+                    Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
+                    {
+                        dc.ConsoleOutput.Add(_rx_msgs.Dequeue());
+                        Scroller.ScrollToBottom();
+                    }));
+                }
+            }
+        }
+
+        void ConsoleInput_PreviewKeyUp(object sender, KeyEventArgs e)
+        {
             if (e.Key == Key.Enter)
             {
-                string cmd = ConsoleInput.Text;
-
-                //dc.RunCommand();
+                _tx_msgs.Enqueue(ConsoleInput.Text);
                 ConsoleInput.Clear();
                 ConsoleInput.Focus();
                 Scroller.ScrollToBottom();
-
-                SendText("\r");
             }
         }
 
@@ -153,30 +195,6 @@ namespace SpectrumAnalyzer
             }
         }
 
-        private void SendText(string text)
-        {
-            if (_serialPort != null)
-            {
-                if (_serialPort.IsOpen)
-                {
-                    try
-                    {
-                        // Send the binary data out the port
-                        byte[] bytes = Encoding.UTF8.GetBytes(text);
-
-                        _serialPort.Write(bytes, 0, bytes.Length);
-                    }
-                    catch
-                    {
-
-                    }
-                }
-                else
-                {
-                }
-            }
-        }
-
         private void BlurryColorPicker_OnColorChanged(object sender, Color color)
         {
             foreach (var audioSpectrum in Spectrum.Children.OfType<AudioSpectrum>())
@@ -249,11 +267,11 @@ namespace SpectrumAnalyzer
                         // Found end of received message.
                         string result = Regex.Replace(_msg, @"\r\n?|\n", "");
 
-                        Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
+                        // Don't display extra line breaks.
+                        if (result.Length > 0)
                         {
-                            dc.ConsoleOutput.Add(result);
-                            Scroller.ScrollToBottom();
-                        }));
+                            _rx_msgs.Enqueue(_msg);
+                        }
 
                         _msg = "";
                     }
@@ -263,40 +281,40 @@ namespace SpectrumAnalyzer
 
         private void buttonOff_Click(object sender, RoutedEventArgs e)
         {
-            SendText("mode off/r");
+            _tx_msgs.Enqueue("mode off");
         }
 
         private void buttonWhite_Click(object sender, RoutedEventArgs e)
         {
-            SendText("mode white/r");
+            _tx_msgs.Enqueue("mode white");
         }
 
         private void buttonRainbow_Click(object sender, RoutedEventArgs e)
         {
-            SendText("mode rainbow");
+            _tx_msgs.Enqueue("mode rainbow");
         }
 
         private void buttonWRainbow_Click(object sender, RoutedEventArgs e)
         {
-            SendText("mode wrainbow");
+            _tx_msgs.Enqueue("mode wrainbow");
         }
 
         private void buttonColor_Click(object sender, RoutedEventArgs e)
         {
             int r = 255;
             int g = 255;
-            int b = 255;            
-            SendText("mode color " + String.Format("%d %d %d", r, g, b));
+            int b = 255;
+            _tx_msgs.Enqueue("mode color " + String.Format("%d %d %d", r, g, b));
         }
 
         private void buttonPulse_Click(object sender, RoutedEventArgs e)
         {
-            SendText("mode pulse");
+            _tx_msgs.Enqueue("mode pulse");
         }
 
         private void buttonStat_Click(object sender, RoutedEventArgs e)
         {
-            SendText("mode stat");
+            _tx_msgs.Enqueue("mode stat");
         }
     }
 }
