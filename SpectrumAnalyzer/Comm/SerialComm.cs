@@ -43,7 +43,7 @@ namespace SpectrumAnalyzer.Comm
 
             try
             {
-                _serialPort.BaudRate = 115200;
+                _serialPort.BaudRate = 500000;
                 _serialPort.DataBits = 8;
                 _serialPort.Handshake = Handshake.None;
                 _serialPort.Parity = Parity.None;
