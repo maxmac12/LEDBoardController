@@ -13,6 +13,8 @@ using CSCore.SoundIn;
 using CSCore.Streams;
 using SpectrumAnalyzer.Enums;
 using SpectrumAnalyzer.Factories;
+using SpectrumAnalyzer.Comm;
+using System.ComponentModel;
 
 namespace SpectrumAnalyzer.Models
 {
@@ -67,6 +69,10 @@ namespace SpectrumAnalyzer.Models
         private MMDevice _currentAudioDevice;
 
         #endregion Fields
+
+        #region Console
+
+        #endregion
 
         #region Properties
 

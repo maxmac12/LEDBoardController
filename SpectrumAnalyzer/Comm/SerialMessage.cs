@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SpectrumAnalyzer.SerialComm
+namespace SpectrumAnalyzer.Comm
 {
     /*
      * Defines a generic message of the following format:

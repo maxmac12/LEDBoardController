@@ -11,7 +11,7 @@
                       mc:Ignorable="d"
                       SizeToContent="WidthAndHeight" Background="Black" Strength="0.75" 
                       DataContext="{Binding AnalyzerViewModel, Source={x:Static module:ViewModelLocator.Instance}}"
-                      Title="Spectrum Analyzer" Height="938.901">
+                      Title="Spectrum Analyzer" Height="535.401">
     
     <windows:BlurryWindow.Resources>
         <system:Double x:Key="ActualRaising">25.5</system:Double>
@@ -154,29 +154,6 @@
                         Height="25" 
                         Margin="10,0,10,0"
                         Click="buttonConnectDisconnect_Click"/>
-                <TextBox x:Name="ConsoleInput"
-                         Text="{Binding ConsoleInput, Mode=TwoWay}" 
-                         PreviewKeyUp="ConsoleInput_PreviewKeyUp"
-                         Margin="10" 
-                         Background="Black"
-                         Foreground="White" 
-                         FontFamily="Consolas" 
-                         BorderBrush="{x:Null}"
-                         SelectionBrush="{x:Null}" />
-                <ScrollViewer Name="Scroller" 
-                              Margin="10" 
-                              Height="300" 
-                              Background="Black">
-                    <ItemsControl ItemsSource="{Binding ConsoleOutput, Mode=OneWay}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Path=.}" 
-                                           Foreground="LimeGreen" 
-                                           FontFamily="Consolas"/>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
                 <Button x:Name="buttonOff" 
                         Content="OFF" 
                         Height="25" 
@@ -197,21 +174,11 @@
                         Height="25" 
                         Margin="10,0,10,0"
                         Click="buttonWRainbow_Click"/>
-                <Button x:Name="buttonColor" 
-                        Content="COLOR" 
-                        Height="25" 
-                        Margin="10,0,10,0"
-                        Click="buttonColor_Click"/>
                 <Button x:Name="buttonPulse" 
                         Content="PULSE" 
                         Height="25" 
                         Margin="10,0,10,0"
                         Click="buttonPulse_Click"/>
-                <Button x:Name="buttonStat" 
-                        Content="STAT" 
-                        Height="25" 
-                        Margin="10,0,10,0"
-                        Click="buttonStat_Click"/>
             </StackPanel>
         </StackPanel>
     </Grid>

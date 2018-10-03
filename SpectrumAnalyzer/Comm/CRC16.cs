@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SpectrumAnalyzer.SerialComm
+namespace SpectrumAnalyzer.Comm
 {
     public static class CRC16
     {
