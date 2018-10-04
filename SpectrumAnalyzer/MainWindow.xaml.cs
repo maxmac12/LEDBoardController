@@ -2,17 +2,11 @@
 using System.Linq;
 using System.Windows.Media;
 using SpectrumAnalyzer.Controls;
+using SpectrumAnalyzer.Comm;
 using SpectrumAnalyzer.Singleton;
 using System.IO.Ports;
-using System.Windows.Input;
 using System.Windows;
-using System.Threading;
-using System.Text;
-using System.Collections.Generic;
-using System.Windows.Threading;
-using System.Text.RegularExpressions;
-using SpectrumAnalyzer.Comm;
-using SpectrumAnalyzer.Enums;
+
 
 namespace SpectrumAnalyzer
 {
@@ -77,8 +71,6 @@ namespace SpectrumAnalyzer
 
         private void BlurryColorPicker_OnColorChanged(object sender, Color color)
         {
-            _serialComm.Send("mode color " + color.R + " " + color.G + " " + color.B);
-
             foreach (var audioSpectrum in Spectrum.Children.OfType<AudioSpectrum>())
             {
                 audioSpectrum.ForegroundPitched = new SolidColorBrush(color);
@@ -89,13 +81,8 @@ namespace SpectrumAnalyzer
                 audioSpectrum.ForegroundPitched = new SolidColorBrush(color);
             }
 
-            SerialMessage tx_msg = new SerialMessage();
-            tx_msg.dataLength = 0x03;
-            tx_msg.command = SerialMessage.Commands.COLOR_CMD;
-            tx_msg.data[0] = color.R;
-            tx_msg.data[1] = color.G;
-            tx_msg.data[2] = color.B;
-            _serialComm.Send(tx_msg);
+            _serialComm.SetColor(color);
+            _serialComm.SetMode(SerialComm.LEDModes.COLOR);
         }
 
         private void comboBoxComPort_Selected(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -128,47 +115,38 @@ namespace SpectrumAnalyzer
 
         private void buttonOff_Click(object sender, RoutedEventArgs e)
         {
-            SerialMessage tx_msg = new SerialMessage();
-            tx_msg.dataLength = 0x01;
-            tx_msg.command = SerialMessage.Commands.MODE_CMD;
-            tx_msg.data[0] = SerialMessage.LEDModes.MODE_OFF;
-            _serialComm.Send(tx_msg);
+            _serialComm.SetMode(SerialComm.LEDModes.OFF);
         }
 
         private void buttonWhite_Click(object sender, RoutedEventArgs e)
         {
-            SerialMessage tx_msg = new SerialMessage();
-            tx_msg.dataLength = 0x01;
-            tx_msg.command = SerialMessage.Commands.MODE_CMD;
-            tx_msg.data[0] = SerialMessage.LEDModes.MODE_WHITE;
-            _serialComm.Send(tx_msg);
+            _serialComm.SetMode(SerialComm.LEDModes.WHITE);
+
         }
 
         private void buttonRainbow_Click(object sender, RoutedEventArgs e)
         {
-            SerialMessage tx_msg = new SerialMessage();
-            tx_msg.dataLength = 0x01;
-            tx_msg.command = SerialMessage.Commands.MODE_CMD;
-            tx_msg.data[0] = SerialMessage.LEDModes.MODE_RAINBOW;
-            _serialComm.Send(tx_msg);
+            _serialComm.SetMode(SerialComm.LEDModes.RAINBOW_CYCLE);
         }
 
         private void buttonWRainbow_Click(object sender, RoutedEventArgs e)
         {
-            SerialMessage tx_msg = new SerialMessage();
-            tx_msg.dataLength = 0x01;
-            tx_msg.command = SerialMessage.Commands.MODE_CMD;
-            tx_msg.data[0] = SerialMessage.LEDModes.MODE_WRAINBOW;
-            _serialComm.Send(tx_msg);
+            _serialComm.SetMode(SerialComm.LEDModes.WHITE_OVER_RAINBOW);
+        }
+
+        private void buttonColor_Click(object sender, RoutedEventArgs e)
+        {
+            _serialComm.SetMode(SerialComm.LEDModes.COLOR);
         }
 
         private void buttonPulse_Click(object sender, RoutedEventArgs e)
         {
-            SerialMessage tx_msg = new SerialMessage();
-            tx_msg.dataLength = 0x01;
-            tx_msg.command = SerialMessage.Commands.MODE_CMD;
-            tx_msg.data[0] = SerialMessage.LEDModes.MODE_PULSE;
-            _serialComm.Send(tx_msg);
+            _serialComm.SetMode(SerialComm.LEDModes.COLOR_PULSE);
+        }
+
+        private void buttonSpectrum_Click(object sender, RoutedEventArgs e)
+        {
+            _serialComm.SetMode(SerialComm.LEDModes.SPECTRUM);
         }
     }
 }

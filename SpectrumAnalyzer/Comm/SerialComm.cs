@@ -3,37 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.IO.Ports;
 using System.Text.RegularExpressions;
-using System.Windows;
-using System.Windows.Threading;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
+using System.Windows.Media;
+using SpectrumAnalyzer.Controls;
+using SpectrumAnalyzer.Singleton;
 
 namespace SpectrumAnalyzer.Comm
 {
     public class SerialComm
     {
-        //public class LEDModes
-        //{
-        //    public byte OFF = 0x00;
-        //    public byte WHITE = 0x00;
-        //    public byte COLOR = 0x00;
-        //    public byte COLOR_PULSE = 0x00;
-        //    public byte RAINBOW_CYCLE      = 0x00;
-        //    public byte WHITE_OVER_RAINBOW = 0x00;
-        //};
+        public const int NUM_LED_STRIPS = 8;
+        public const int NUM_LEDS_PER_STRIP = 29;
 
         private SerialPort _serialPort = null;
         private Thread _threadSerial;
         private string _msg;
         private Queue<string> _tx_msgs = new Queue<string>();
         private Queue<string> _rx_msgs = new Queue<string>();
-
         private Queue<byte[]> _tx = new Queue<byte[]>();
-
-
+        
         private byte[] _rx_one_byte = new byte[1];
         private byte[] _rx_queue = new byte[SerialMessage.MAX_MSG_SIZE];
         private int _rx_next_get = 0;
@@ -58,6 +47,23 @@ namespace SpectrumAnalyzer.Comm
 
         RxState _rx_state = RxState.LookForPreamble;
 
+        public enum LEDModes
+        {
+            OFF = 0,
+            WHITE,
+            COLOR,
+            COLOR_PULSE,
+            RAINBOW_CYCLE,
+            WHITE_OVER_RAINBOW,
+            SPECTRUM,
+            IDLE,
+            NUM_LED_MODES
+        };
+
+        private LEDModes currMode = LEDModes.IDLE;
+        private Color currColor;
+        private byte[] stripHeights = new byte[NUM_LED_STRIPS]; 
+
         private static bool run = true;  // Flag to stop all created SerialThreads.
 
         public SerialComm()
@@ -69,6 +75,25 @@ namespace SpectrumAnalyzer.Comm
         public static void Stop()
         {
             run = false;
+        }
+
+        public void SetMode(LEDModes mode)
+        {
+            currMode = mode;
+        }
+
+        public void SetColor(Color color)
+        {
+            currColor = color;
+        }
+
+        public void SetHeight(uint stripId, byte height)
+        {
+            if (stripId < NUM_LED_STRIPS)
+            {
+                // TODO: Normalize the height based on NUM_LEDS_PER_STRIP.
+                stripHeights[stripId] = height;
+            }
         }
 
         public void Send(string txt)
@@ -175,57 +200,99 @@ namespace SpectrumAnalyzer.Comm
                     _serialPort.Write(_tx_buffer, i, 1);
                     Thread.Sleep(1);
                 }
-
-                //_serialPort.Write(_tx_buffer, 0, tx_msg.dataLength + 5);
             }
-            catch (Exception)
+            catch
             {
-                throw;
+
             }
         }
 
         private void SerialThread()
         {
+            SerialMessage tx_msg = new SerialMessage();
+
             while (run)
             {
-                if (_tx_msgs.Count > 0)
+                switch(currMode)
                 {
-                    string next_msg = _tx_msgs.Dequeue() + "\r";
+                    case LEDModes.OFF:
+                        tx_msg.dataLength = 0x01;
+                        tx_msg.command = SerialMessage.Commands.MODE_CMD;
+                        tx_msg.data[0] = SerialMessage.LEDModes.MODE_OFF;
+                        Send(tx_msg);
+                        currMode = LEDModes.IDLE;
+                        break;
 
-                    if (_serialPort != null)
-                    {
-                        if (_serialPort.IsOpen)
+                    case LEDModes.WHITE:
+                        tx_msg.dataLength = 0x01;
+                        tx_msg.command = SerialMessage.Commands.MODE_CMD;
+                        tx_msg.data[0] = SerialMessage.LEDModes.MODE_WHITE;
+                        Send(tx_msg);
+                        currMode = LEDModes.IDLE;
+                        break;
+
+                    case LEDModes.COLOR:
+                        tx_msg.dataLength = 0x03;
+                        tx_msg.command = SerialMessage.Commands.COLOR_CMD;
+                        tx_msg.data[0] = currColor.R;
+                        tx_msg.data[1] = currColor.G;
+                        tx_msg.data[2] = currColor.B;
+                        Send(tx_msg);
+                        currMode = LEDModes.IDLE;
+                        break;
+
+                    case LEDModes.COLOR_PULSE:
+                        tx_msg.dataLength = 0x01;
+                        tx_msg.command = SerialMessage.Commands.MODE_CMD;
+                        tx_msg.data[0] = SerialMessage.LEDModes.MODE_PULSE;
+                        Send(tx_msg);
+                        currMode = LEDModes.IDLE;
+                        break;
+
+                    case LEDModes.RAINBOW_CYCLE:
+                        tx_msg.dataLength = 0x01;
+                        tx_msg.command = SerialMessage.Commands.MODE_CMD;
+                        tx_msg.data[0] = SerialMessage.LEDModes.MODE_RAINBOW;
+                        Send(tx_msg);
+                        currMode = LEDModes.IDLE;
+                        break;
+
+                    case LEDModes.WHITE_OVER_RAINBOW:
+                        tx_msg.dataLength = 0x01;
+                        tx_msg.command = SerialMessage.Commands.MODE_CMD;
+                        tx_msg.data[0] = SerialMessage.LEDModes.MODE_WRAINBOW;
+                        Send(tx_msg);
+                        currMode = LEDModes.IDLE;
+                        break;
+
+                    case LEDModes.SPECTRUM:
+                        uint i = 0;
+
+                        tx_msg.dataLength = NUM_LED_STRIPS;
+                        tx_msg.command = SerialMessage.Commands.SPECTRUM_CMD;
+
+                        foreach (var frequencyBin in ViewModelLocator.Instance.AnalyzerViewModel.FrequencyBins)
                         {
-                            try
+                            if (i < NUM_LED_STRIPS)
                             {
-                                // Send the binary data out the port
-                                byte[] bytes = Encoding.UTF8.GetBytes(next_msg);
-
-                                foreach (byte next in bytes)
-                                {
-                                    byte[] data = new byte[] { next };
-                                    _serialPort.Write(data, 0, 1);
-
-                                    Thread.Sleep(50);  // Wait for the device to process each byte.
-                                }
+                                tx_msg.data[i++] = (byte)(NUM_LEDS_PER_STRIP * (frequencyBin.Value / 100.0));
                             }
-                            catch
+                            else
                             {
-
+                                Console.WriteLine("Too many frequency bins!");
+                                break;
                             }
                         }
-                        else
-                        {
-                        }
-                    }
+
+                        Send(tx_msg);
+                        break;
+
+                    case LEDModes.IDLE:  // Fall through
+                    default:
+                        break;
                 }
 
-                Thread.Sleep(500);  // Wait for the device to process any commands.
-
-                if (_rx_msgs.Count > 0)
-                {
-                    Console.WriteLine(_rx_msgs.Dequeue());
-                }
+                Thread.Sleep(100);  // Wait for the device to process any commands.
             }
         }
 

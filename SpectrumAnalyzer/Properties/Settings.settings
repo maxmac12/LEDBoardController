@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="Bins" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">100</Value>
+      <Value Profile="(Default)">8</Value>
     </Setting>
     <Setting Name="Rate" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">50</Value>

@@ -11,7 +11,7 @@
                       mc:Ignorable="d"
                       SizeToContent="WidthAndHeight" Background="Black" Strength="0.75" 
                       DataContext="{Binding AnalyzerViewModel, Source={x:Static module:ViewModelLocator.Instance}}"
-                      Title="Spectrum Analyzer" Height="535.401">
+                      Title="Spectrum Analyzer" Height="606.401">
     
     <windows:BlurryWindow.Resources>
         <system:Double x:Key="ActualRaising">25.5</system:Double>
@@ -141,7 +141,7 @@
                                            ColorChanged="BlurryColorPicker_OnColorChanged"/>
             </DockPanel>
 
-            <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Vertical" Height="236">
                 <ComboBox x:Name="comboBoxComPort" 
                           Height="25" 
                           Margin="10,0,10,0"  
@@ -174,11 +174,21 @@
                         Height="25" 
                         Margin="10,0,10,0"
                         Click="buttonWRainbow_Click"/>
+                <Button x:Name="buttonColor" 
+                        Content="COLOR" 
+                        Height="25" 
+                        Margin="10,0,10,0"
+                        Click="buttonColor_Click"/>
                 <Button x:Name="buttonPulse" 
                         Content="PULSE" 
                         Height="25" 
                         Margin="10,0,10,0"
                         Click="buttonPulse_Click"/>
+                <Button x:Name="buttonSpectrum" 
+                        Content="SPECTRUM" 
+                        Height="25" 
+                        Margin="10,0,10,0"
+                        Click="buttonSpectrum_Click"/>
             </StackPanel>
         </StackPanel>
     </Grid>
