@@ -88,6 +88,14 @@ namespace SpectrumAnalyzer
             {
                 audioSpectrum.ForegroundPitched = new SolidColorBrush(color);
             }
+
+            SerialMessage tx_msg = new SerialMessage();
+            tx_msg.dataLength = 0x03;
+            tx_msg.command = SerialMessage.Commands.COLOR_CMD;
+            tx_msg.data[0] = color.R;
+            tx_msg.data[1] = color.G;
+            tx_msg.data[2] = color.B;
+            _serialComm.Send(tx_msg);
         }
 
         private void comboBoxComPort_Selected(object sender, System.Windows.Controls.SelectionChangedEventArgs e)

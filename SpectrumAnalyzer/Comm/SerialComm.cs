@@ -173,7 +173,7 @@ namespace SpectrumAnalyzer.Comm
                 {
                     Console.WriteLine("TX: " + String.Format("{0,10:X}", _tx_buffer[i]));
                     _serialPort.Write(_tx_buffer, i, 1);
-                    Thread.Sleep(10);
+                    Thread.Sleep(1);
                 }
 
                 //_serialPort.Write(_tx_buffer, 0, tx_msg.dataLength + 5);
