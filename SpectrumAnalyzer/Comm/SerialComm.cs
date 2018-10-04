@@ -15,11 +15,26 @@ namespace SpectrumAnalyzer.Comm
 {
     public class SerialComm
     {
+        public class LEDModes
+        {
+            public byte OFF = 0x00;
+            public byte WHITE = 0x00;
+            public byte COLOR = 0x00;
+            public byte COLOR_PULSE = 0x00;
+            public byte RAINBOW_CYCLE      = 0x00;
+            public byte WHITE_OVER_RAINBOW = 0x00;
+        };
+
         private SerialPort _serialPort = null;
         private Thread _threadSerial;
         private string _msg;
         private Queue<string> _tx_msgs = new Queue<string>();
         private Queue<string> _rx_msgs = new Queue<string>();
+
+        private Queue<byte[]> _tx = new Queue<byte[]>();
+
+
+        private static bool run = true;  // Flag to stop all created SerialThreads.
 
         public SerialComm()
         {
@@ -27,9 +42,19 @@ namespace SpectrumAnalyzer.Comm
             _threadSerial.Start();
         }
 
+        public static void Stop()
+        {
+            run = false;
+        }
+
         public void Send(string txt)
         {
             _tx_msgs.Enqueue(txt);
+        }
+
+        public void Send(byte[] data)
+        {
+            _serialPort.Write(data, 0, 1);
         }
 
         public bool OpenComPort(string com_port)
@@ -85,7 +110,7 @@ namespace SpectrumAnalyzer.Comm
 
         private void SerialThread()
         {
-            while (true)
+            while (run)
             {
                 if (_tx_msgs.Count > 0)
                 {

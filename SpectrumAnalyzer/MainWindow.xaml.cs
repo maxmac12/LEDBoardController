@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Windows.Threading;
 using System.Text.RegularExpressions;
 using SpectrumAnalyzer.Comm;
+using SpectrumAnalyzer.Enums;
 
 namespace SpectrumAnalyzer
 {
@@ -21,7 +22,6 @@ namespace SpectrumAnalyzer
     public partial class MainWindow
     {
         private SerialComm _serialComm;
-        private Color _color;
 
         public MainWindow()
         {
@@ -72,6 +72,7 @@ namespace SpectrumAnalyzer
         private static void OnClosed(object sender, EventArgs eventArgs)
         {
             ViewModelLocator.Instance.AnalyzerViewModel.Stop();
+            SerialComm.Stop();
         }
 
         private void BlurryColorPicker_OnColorChanged(object sender, Color color)
@@ -119,27 +120,27 @@ namespace SpectrumAnalyzer
 
         private void buttonOff_Click(object sender, RoutedEventArgs e)
         {
-            _serialComm.Send("mode off");
+            _serialComm.Send(new byte[] { (byte)LEDModes.OFF });
         }
 
         private void buttonWhite_Click(object sender, RoutedEventArgs e)
         {
-            _serialComm.Send("mode white");
+            _serialComm.Send(new byte[] { (byte)LEDModes.WHITE });
         }
 
         private void buttonRainbow_Click(object sender, RoutedEventArgs e)
         {
-            _serialComm.Send("mode rainbow");
+            _serialComm.Send(new byte[] { (byte)LEDModes.RAINBOW_CYCLE });
         }
 
         private void buttonWRainbow_Click(object sender, RoutedEventArgs e)
         {
-            _serialComm.Send("mode wrainbow");
+            _serialComm.Send(new byte[] { (byte)LEDModes.WHITE_OVER_RAINBOW });
         }
 
         private void buttonPulse_Click(object sender, RoutedEventArgs e)
         {
-            _serialComm.Send("mode pulse");
+            _serialComm.Send(new byte[] { (byte)LEDModes.COLOR_PULSE });
         }
     }
 }

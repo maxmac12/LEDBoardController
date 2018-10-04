@@ -32,9 +32,8 @@ namespace SpectrumAnalyzer.Comm
         // Definitions for the LED Command designations.
         public static class LedCommand
         {
-            public const byte LED_STAT  = 0x00;
-            public const byte LED_ABOUT = 0x01;
-            public const byte LED_MODE  = 0x02;
+            public const byte LED_OFF   = 0x00;
+            public const byte LED_WHITE = 0x01;
         }
 
         // Properties.
