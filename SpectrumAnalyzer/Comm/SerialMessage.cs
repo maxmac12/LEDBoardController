@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SpectrumAnalyzer.Enums;
 
 namespace SpectrumAnalyzer.Comm
 {
@@ -25,20 +26,28 @@ namespace SpectrumAnalyzer.Comm
     public class SerialMessage
     {
         // Define various message element max sizes.
-        public const int MAX_BODY_SIZE = 249;  // TODO: Determine needed size.
-        public const int MAX_MSG_SIZE = MAX_BODY_SIZE + 5;  // Includes header and CRC.
+        public const int MAX_MSG_SIZE = 13;  // Includes header and CRC.
 
-
-        // Definitions for the LED Command designations.
-        public static class LedCommand
+        public static class Commands
         {
-            public const byte LED_OFF   = 0x00;
-            public const byte LED_WHITE = 0x01;
+            public const byte MODE_CMD = 0x00;
+            public const byte COLOR_CMD = 0x01;
+            public const byte SPECTRUM_CMD = 0x02;
+        }
+
+        public class LEDModes
+        {
+            public const byte MODE_OFF = 0x00;
+            public const byte MODE_WHITE = 0x01;
+            public const byte MODE_COLOR = 0x02;
+            public const byte MODE_PULSE = 0x03;
+            public const byte MODE_RAINBOW = 0x04;
+            public const byte MODE_WRAINBOW = 0x05;
         }
 
         // Properties.
         public byte preamble { get; set; }
-        public byte length { get; set; }
+        public byte dataLength { get; set; }
         public byte command { get; set; }
         public byte[] data;
         public ushort crc { get; set; }
@@ -46,8 +55,8 @@ namespace SpectrumAnalyzer.Comm
         // Instance Constructor. 
         public SerialMessage()
         {
-            preamble = 0xEA;
-            data = new byte[MAX_BODY_SIZE];
+            preamble = 0xEE;
+            data = new byte[MAX_MSG_SIZE];
         }
     }
 }

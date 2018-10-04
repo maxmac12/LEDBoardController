@@ -120,27 +120,47 @@ namespace SpectrumAnalyzer
 
         private void buttonOff_Click(object sender, RoutedEventArgs e)
         {
-            _serialComm.Send(new byte[] { (byte)LEDModes.OFF });
+            SerialMessage tx_msg = new SerialMessage();
+            tx_msg.dataLength = 0x01;
+            tx_msg.command = SerialMessage.Commands.MODE_CMD;
+            tx_msg.data[0] = SerialMessage.LEDModes.MODE_OFF;
+            _serialComm.Send(tx_msg);
         }
 
         private void buttonWhite_Click(object sender, RoutedEventArgs e)
         {
-            _serialComm.Send(new byte[] { (byte)LEDModes.WHITE });
+            SerialMessage tx_msg = new SerialMessage();
+            tx_msg.dataLength = 0x01;
+            tx_msg.command = SerialMessage.Commands.MODE_CMD;
+            tx_msg.data[0] = SerialMessage.LEDModes.MODE_WHITE;
+            _serialComm.Send(tx_msg);
         }
 
         private void buttonRainbow_Click(object sender, RoutedEventArgs e)
         {
-            _serialComm.Send(new byte[] { (byte)LEDModes.RAINBOW_CYCLE });
+            SerialMessage tx_msg = new SerialMessage();
+            tx_msg.dataLength = 0x01;
+            tx_msg.command = SerialMessage.Commands.MODE_CMD;
+            tx_msg.data[0] = SerialMessage.LEDModes.MODE_RAINBOW;
+            _serialComm.Send(tx_msg);
         }
 
         private void buttonWRainbow_Click(object sender, RoutedEventArgs e)
         {
-            _serialComm.Send(new byte[] { (byte)LEDModes.WHITE_OVER_RAINBOW });
+            SerialMessage tx_msg = new SerialMessage();
+            tx_msg.dataLength = 0x01;
+            tx_msg.command = SerialMessage.Commands.MODE_CMD;
+            tx_msg.data[0] = SerialMessage.LEDModes.MODE_WRAINBOW;
+            _serialComm.Send(tx_msg);
         }
 
         private void buttonPulse_Click(object sender, RoutedEventArgs e)
         {
-            _serialComm.Send(new byte[] { (byte)LEDModes.COLOR_PULSE });
+            SerialMessage tx_msg = new SerialMessage();
+            tx_msg.dataLength = 0x01;
+            tx_msg.command = SerialMessage.Commands.MODE_CMD;
+            tx_msg.data[0] = SerialMessage.LEDModes.MODE_PULSE;
+            _serialComm.Send(tx_msg);
         }
     }
 }

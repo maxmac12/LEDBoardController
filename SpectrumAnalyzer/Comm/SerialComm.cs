@@ -15,15 +15,15 @@ namespace SpectrumAnalyzer.Comm
 {
     public class SerialComm
     {
-        public class LEDModes
-        {
-            public byte OFF = 0x00;
-            public byte WHITE = 0x00;
-            public byte COLOR = 0x00;
-            public byte COLOR_PULSE = 0x00;
-            public byte RAINBOW_CYCLE      = 0x00;
-            public byte WHITE_OVER_RAINBOW = 0x00;
-        };
+        //public class LEDModes
+        //{
+        //    public byte OFF = 0x00;
+        //    public byte WHITE = 0x00;
+        //    public byte COLOR = 0x00;
+        //    public byte COLOR_PULSE = 0x00;
+        //    public byte RAINBOW_CYCLE      = 0x00;
+        //    public byte WHITE_OVER_RAINBOW = 0x00;
+        //};
 
         private SerialPort _serialPort = null;
         private Thread _threadSerial;
@@ -33,6 +33,30 @@ namespace SpectrumAnalyzer.Comm
 
         private Queue<byte[]> _tx = new Queue<byte[]>();
 
+
+        private byte[] _rx_one_byte = new byte[1];
+        private byte[] _rx_queue = new byte[SerialMessage.MAX_MSG_SIZE];
+        private int _rx_next_get = 0;
+        private int _rx_next_put = 0;
+        private int _rx_next_preamble_get = 0;
+        private SerialMessage _rx_msg = new SerialMessage();
+        private int _rx_msg_index = 0;
+        private int _rx_expected_length = 0;
+        private ushort _crc_calculated;
+        private ushort _crc_embedded;
+        private byte[] _tx_buffer = new byte[SerialMessage.MAX_MSG_SIZE];
+
+        private enum RxState
+        {
+            LookForPreamble,
+            LookForLength,
+            LookForCommand,
+            LookForBody,
+            LookForCrcMsb,
+            LookForCrcLsb
+        };
+
+        RxState _rx_state = RxState.LookForPreamble;
 
         private static bool run = true;  // Flag to stop all created SerialThreads.
 
@@ -90,8 +114,6 @@ namespace SpectrumAnalyzer.Comm
                 Console.WriteLine("COM Port Could Not Be Opened");
             }
 
-            //Scroller.ScrollToBottom();
-
             return rtnStatus;
         }
 
@@ -100,11 +122,65 @@ namespace SpectrumAnalyzer.Comm
             if (_serialPort != null)
             {
                 Console.WriteLine(_serialPort.PortName + " Closed");
-                //Scroller.ScrollToBottom();
 
                 _serialPort.Close();
                 _serialPort.DataReceived -= _serialPort_DataReceived;
                 _serialPort = null;
+            }
+        }
+
+        public void Send(SerialMessage tx_msg)
+        {
+            int index = 0;
+            ushort crc = 0xFFFF;
+
+            if (_serialPort == null)
+            {
+                return;
+            }
+            else if (!_serialPort.IsOpen)
+            {
+                return;
+            }
+
+            // Fill the header.
+            _tx_buffer[index++] = tx_msg.preamble;
+            _tx_buffer[index++] = tx_msg.dataLength;
+            _tx_buffer[index++] = tx_msg.command;
+
+            // Body if it exists.
+            for (int i = 0; i < tx_msg.dataLength; i++)
+            {
+                _tx_buffer[index++] = tx_msg.data[i];
+            }
+
+            // Calc CRC across message up to CRC field.
+            for (int i = 0; i < (tx_msg.dataLength + 3); i++)
+            {
+                crc = CRC16.addcrc(crc, _tx_buffer[i]);
+            }
+
+            // Fill in CRC.
+            tx_msg.crc = crc;
+            _tx_buffer[index++] = (byte)(crc & 0x00FF);
+            _tx_buffer[index++] = (byte)(crc >> 8);
+
+            // Send the message.
+            try
+            {
+                Console.WriteLine("Transmitting...");
+                for (int i = 0; i < tx_msg.dataLength + 5; i++)
+                {
+                    Console.WriteLine("TX: " + String.Format("{0,10:X}", _tx_buffer[i]));
+                    _serialPort.Write(_tx_buffer, i, 1);
+                    Thread.Sleep(10);
+                }
+
+                //_serialPort.Write(_tx_buffer, 0, tx_msg.dataLength + 5);
+            }
+            catch (Exception)
+            {
+                throw;
             }
         }
 
