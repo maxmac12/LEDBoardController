@@ -193,10 +193,10 @@ namespace SpectrumAnalyzer.Comm
             // Send the message.
             try
             {
-                Console.WriteLine("Transmitting...");
+                //Console.WriteLine("Transmitting...");
                 for (int i = 0; i < tx_msg.dataLength + 5; i++)
                 {
-                    Console.WriteLine("TX: " + String.Format("{0,10:X}", _tx_buffer[i]));
+                    //Console.WriteLine("TX: " + String.Format("{0,10:X}", _tx_buffer[i]));
                     _serialPort.Write(_tx_buffer, i, 1);
                     Thread.Sleep(1);
                 }
@@ -275,7 +275,7 @@ namespace SpectrumAnalyzer.Comm
                         {
                             if (i < NUM_LED_STRIPS)
                             {
-                                tx_msg.data[i++] = (byte)(NUM_LEDS_PER_STRIP * (frequencyBin.Value / 100.0));
+                                tx_msg.data[i++] = (byte)(NUM_LEDS_PER_STRIP * (frequencyBin.Value / 150.0));
                             }
                             else
                             {
